@@ -17,7 +17,7 @@ import React from 'react';
 
 export const config = getDefaultConfig({
     appName: 'Suprabhat_Mitro',
-    projectId: 'ff442c27a8135c24e931212895c19453',
+    projectId: process.env.APP_ID || 'default_project_id',
     chains: [sepolia],
     ssr: true, // If your dApp uses server side rendering (SSR)
   });
