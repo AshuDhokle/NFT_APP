@@ -7,7 +7,7 @@ error Whitelist_MaxLimitReached();
 contract Whitelist {
     uint8 public immutable i_maxWhitelistAddress;
 
-    mapping(address => bool) private whitelistedAddresses;
+    mapping(address => bool) public whitelistedAddresses;
 
     uint8 private numOfAddressesWhitelisted;
 
@@ -34,7 +34,5 @@ contract Whitelist {
         return numOfAddressesWhitelisted;
     }
 
-    function checkWhitelisted(address _people) public view returns(bool){
-        return whitelistedAddresses[_people];
-    }
+    
 }

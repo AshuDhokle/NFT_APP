@@ -16,10 +16,10 @@ const Navbar = () => {
         Connect
       </button>
       : (
-        <>
-          {isAccountWhitelisted && <MdOutlineVerifiedUser />}
+        <span className='flex flex-row items-center'>
+          {isAccountWhitelisted && <MdOutlineVerifiedUser className='size-6 text-green-500 mr-2'/>}
           {formatWalletString(wallet)}
-        </>
+        </span>
       )
       }
     </div>

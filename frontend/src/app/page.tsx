@@ -5,7 +5,7 @@ import { useContext, useState } from "react";
 import { PropagateLoader } from 'react-spinners'
 export default function Home() {
 
-  const { mintNft, totalMinted, loadingMint, isAccountWhitelisted } = useContext(Web3Context)
+  const { mintNft, totalMinted, loadingMint, isAccountWhitelisted, whitelistAccount  } = useContext(Web3Context)
   const [eth, setEth] = useState('0');
   
   const handleSubmit = (e : React.FormEvent<HTMLFormElement>) =>{
@@ -23,7 +23,9 @@ export default function Home() {
           <h3 className="text-lg font-medium font-mono m-2"> First 10 Whitlisted user will get it for <span className="font-black text-4xl">free!!!</span></h3>
           {!isAccountWhitelisted && <button className="m-2 px-6 w-64 h-14 bg-gradient-to-r from-blue-500 to-cyan-400 text-white 
              font-bold rounded-lg shadow-lg transform transition-all duration-300 
-             hover:scale-105 hover:shadow-xl flex items-center justify-center"> 
+             hover:scale-105 hover:shadow-xl flex items-center justify-center"
+             onClick={()=>whitelistAccount()}
+             > 
              Whitelist 
           </button>}
         </div>

@@ -30,7 +30,7 @@ contract Suprabhat__Mitro is ERC721Enumerable, Ownable {
             revert Suprabhat__Mitro__MAX_LIMIT_REACHED();
         }
         
-        if(msg.value < PRICE && whitelist.checkWhitelisted(msg.sender)){
+        if(msg.value < PRICE && whitelist.whitelistedAddresses(msg.sender)){
             if(balanceOf(msg.sender) > 0){
                 revert Suprabhat__Mitro__ALREADY_OWNED();
             }

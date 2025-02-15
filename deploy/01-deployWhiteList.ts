@@ -1,4 +1,4 @@
-import { network } from "hardhat";
+import { ethers, network } from "hardhat";
 import verify from "../scripts/verify";
 export default async({getNamedAccounts, deployments} : {deployments: any, getNamedAccounts: any})=>{
   const {deployer} = await getNamedAccounts();
@@ -15,7 +15,7 @@ export default async({getNamedAccounts, deployments} : {deployments: any, getNam
   })
   
   const address = WhitelistContract.address;
-
+    
   if(network.name === 'sepolia'){
     console.log(`Verifying ${contractName} at address : ${address}`);
     await verify(address, args);

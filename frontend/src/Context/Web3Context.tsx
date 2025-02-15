@@ -15,7 +15,8 @@ interface Web3ContextType {
   mintNft: (eth: string) => Promise<void>;
   totalMinted: string;
   whitelistAccount: () => Promise<void>;
-  isAccountWhitelisted: boolean 
+  isAccountWhitelisted: boolean ;
+  loadingMint : boolean;
 }
 
 export const Web3Context = createContext<Web3ContextType | null>(null);
@@ -39,15 +40,22 @@ export function Web3Provider({children}: Web3ProviderProps){
  
  useEffect(()=>{
    if(contract){
+    
     totalSupply();
-    // checkAccountWhitelisted();
+
    }
  },[contract])
  
+ useEffect(()=>{
+  if(whitelistContract){
+    checkAccountWhitelisted();
+  }
+ },[whitelistContract])
+
  const checkAccountWhitelisted = async() =>{
-    if(whitelistContract){
+    if(whitelistContract && wallet){
       try {
-        const response = await whitelistContract?.checkWhitelisted(wallet);
+        const response = await whitelistContract.whitelistedAddresses(wallet);  
         setIsAddressWhitelisted(response)  
       } catch (error) {
         console.log(error);
@@ -59,7 +67,6 @@ export function Web3Provider({children}: Web3ProviderProps){
   if(whitelistContract){
     try {
       const response = await whitelistContract?.addTowhitelist();
-      console.log(response);
       setIsAddressWhitelisted(true);
     } catch (error) {
       console.log(error);
@@ -102,10 +109,9 @@ export function Web3Provider({children}: Web3ProviderProps){
  const totalSupply = async() =>{
   try {
     const supply = await contract?.totalSupply();
-    setTotalMinted(supply?.toString());
+    setTotalMinted(supply);
   } catch (error) {
     console.error("Error fetching total supply:", error);
-    
   } 
 }
 
@@ -114,8 +120,10 @@ export function Web3Provider({children}: Web3ProviderProps){
     setLoadingMint(true);
     try {
       const _price = ethers.parseEther(eth) 
+      
       const response = await contract?.mint({value: _price});
       await response.wait();
+      
       totalSupply();
     } catch (error) {
       console.log(error);
@@ -127,7 +135,7 @@ export function Web3Provider({children}: Web3ProviderProps){
  }
  
  return (
-    <Web3Context.Provider value={{wallet, connectWallet, isWalletConnected, mintNft, totalMinted, whitelistAccount, isAccountWhitelisted }}>
+    <Web3Context.Provider value={{wallet, connectWallet, isWalletConnected, mintNft, totalMinted, whitelistAccount, isAccountWhitelisted, loadingMint }}>
      {children}
     </Web3Context.Provider>
  )
