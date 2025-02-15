@@ -5,7 +5,7 @@ import { useContext, useState } from "react";
 import { PropagateLoader } from 'react-spinners'
 export default function Home() {
 
-  const { mintNft, totalMinted, loadingMint, isAccountWhitelisted, whitelistAccount  } = useContext(Web3Context)
+  const { mintNft, totalMinted, loadingMint, isAccountWhitelisted, whitelistAccount, mintError  } = useContext(Web3Context)
   const [eth, setEth] = useState('0');
   
   const handleSubmit = (e : React.FormEvent<HTMLFormElement>) =>{
@@ -48,6 +48,7 @@ export default function Home() {
             className="m-2 p-2 border-b-2 border-gray-400 focus:outline-none"
             onChange={(e)=>setEth(e.target.value)}/>
           </form>
+          <h1 className="text-red-500 font-bold">{mintError}</h1>
         </div>
       </div>
     </div>

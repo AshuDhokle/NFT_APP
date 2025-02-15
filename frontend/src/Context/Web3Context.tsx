@@ -3,6 +3,7 @@ import { createContext, useEffect, useState} from 'react'
 import { ethers, Contract } from "ethers";
 import { abi, contractAddress } from '@/utils/contractInfo';
 import {whitelistAbi, whitelistAddress} from '@/utils/whitelistContractInfo'
+import {useAccount} from 'wagmi';
 declare global {
   interface Window {
     ethereum: any;
@@ -10,13 +11,14 @@ declare global {
 }
 interface Web3ContextType {
   wallet: string | undefined;
-  connectWallet: () => Promise<void>;
+  connectContract: (walletAddress : string)=> Promise<void>; 
   isWalletConnected: boolean;
   mintNft: (eth: string) => Promise<void>;
   totalMinted: string;
   whitelistAccount: () => Promise<void>;
   isAccountWhitelisted: boolean ;
-  loadingMint : boolean;
+  loadingMint: boolean;
+  mintError: string; 
 }
 
 export const Web3Context = createContext<Web3ContextType | null>(null);
@@ -33,16 +35,10 @@ export function Web3Provider({children}: Web3ProviderProps){
  const [totalMinted, setTotalMinted] = useState('0');
  const [loadingMint, setLoadingMint] = useState(false);
  const [isAccountWhitelisted, setIsAddressWhitelisted] = useState(false);
- 
- useEffect(()=>{
-  checkMetamask().catch((e)=>console.log(e))
- },[])
- 
+ const [mintError, setMintError] = useState('');
  useEffect(()=>{
    if(contract){
-    
     totalSupply();
-
    }
  },[contract])
  
@@ -73,38 +69,23 @@ export function Web3Provider({children}: Web3ProviderProps){
     }
   }
  }
-
- const checkMetamask = async()=>{
-   const {ethereum} = window;
-
-   if(!ethereum){
-    console.log('Check if metamask is available');
-   } else {
-    console.log(`Wallet exists! we're ready to go`);
-   }
- }
-
- const connectWallet = async()=>{
-  const provider = new ethers.BrowserProvider(window.ethereum);
-  const signer = await provider.getSigner();
-  if(signer){
-    setIsWalletConnected(true);
-    setWallet(signer.address)
-    connectContract(provider)
+  
+  const connectContract = async(walletAddress : string)=>{
+    console.log('connecting to contract');
     
-  }
- }
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    
+    setWallet(walletAddress)
+    setIsWalletConnected(true);
+    
+    const tempcontract = new Contract(contractAddress, abi, signer)
+    setContract(tempcontract);
+    
+    const tempWhitelistContract = new Contract(whitelistAddress, whitelistAbi, signer);
+    setWhitelistContract(tempWhitelistContract);
 
- const connectContract = async(provider : any)=>{
-  console.log('connecting to contract');
-  const signer = await provider.getSigner();
-  const tempcontract = new Contract(contractAddress, abi, signer)
-  setContract(tempcontract);
-  
-  const tempWhitelistContract = new Contract(whitelistAddress, whitelistAbi, signer);
-  setWhitelistContract(tempWhitelistContract);
-  
- }
+  }
  
  const totalSupply = async() =>{
   try {
@@ -119,12 +100,21 @@ export function Web3Provider({children}: Web3ProviderProps){
   if(wallet){
     setLoadingMint(true);
     try {
-      const _price = ethers.parseEther(eth) 
-      
+
+      const _price = ethers.parseEther(eth)
+      const reqPrice = ethers.parseEther('0.01') 
+      if(parseInt(totalMinted.toString()) >= 20){
+        setMintError(`Can't mint nft, All nfts are minted`)
+      }
+
+      if(isAccountWhitelisted && _price <  reqPrice){
+        setMintError(`Can't mint nft, you are whitelisted, kindly pay 0.01eth to buy nft`);
+        return;
+      }
       const response = await contract?.mint({value: _price});
       await response.wait();
-      
       totalSupply();
+      setMintError('');
     } catch (error) {
       console.log(error);
     } finally {
@@ -135,7 +125,7 @@ export function Web3Provider({children}: Web3ProviderProps){
  }
  
  return (
-    <Web3Context.Provider value={{wallet, connectWallet, isWalletConnected, mintNft, totalMinted, whitelistAccount, isAccountWhitelisted, loadingMint }}>
+    <Web3Context.Provider value={{wallet, connectContract,isWalletConnected, mintNft, totalMinted, whitelistAccount, isAccountWhitelisted, loadingMint, mintError }}>
      {children}
     </Web3Context.Provider>
  )
